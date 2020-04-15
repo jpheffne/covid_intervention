@@ -26,6 +26,9 @@ The order of this Markdown will follow the order of the manuscript. Currently, t
 # Knitr options
 knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, message = FALSE)
 
+# Save plots or not
+save_plots <- FALSE # plots already saved
+
 # Libraries
 library(here) # relative paths
 library(tidyverse) # tidy functions
@@ -175,7 +178,10 @@ fig1a_plot <- ggplot(fig1a_data, aes(x = question, y = Mean, fill = intervention
         strip.background = element_blank(),
         strip.placement = "outside")
 fig1a_plot
-ggsave(filename = paste0(dir_graphs, "/fig1a.pdf"), plot = fig1a_plot, width = 6, height = 6)
+
+if (save_plots == TRUE) {
+  ggsave(filename = paste0(dir_graphs, "/fig1a.pdf"), plot = fig1a_plot, width = 6, height = 6)
+}
 
 # Figure 1a descriptives
 fig1a_data %>% 
@@ -241,7 +247,10 @@ fig1b_plot <- ggplot(df, aes(x = valence, y = arousal, color = intervention)) + 
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 fig1b_plot
-ggsave(filename = paste0(dir_graphs, "/fig1b.pdf"), plot = fig1b_plot, width = 6, height = 6)
+
+if (save_plots == TRUE) {
+  ggsave(filename = paste0(dir_graphs, "/fig1b.pdf"), plot = fig1b_plot, width = 6, height = 6)
+}
 
 # Figure 1b descriptives
 fig1b_data %>% 
@@ -338,7 +347,10 @@ fig2a_plot <- ggplot() +
   geom_vline(xintercept = 0, lty = 3) + 
   fig2_theme
 fig2a_plot
-ggsave(filename = paste0(dir_graphs, "/fig2a.pdf"), plot = fig2a_plot, width = 8, height = 6)
+
+if (save_plots == TRUE) {
+  ggsave(filename = paste0(dir_graphs, "/fig2a.pdf"), plot = fig2a_plot, width = 8, height = 6)
+}
 
 fig2b_plot <- ggplot() + 
   # Valence
@@ -352,8 +364,10 @@ fig2b_plot <- ggplot() +
   geom_vline(xintercept = 0, lty = 3) + 
   fig2_theme
 fig2b_plot
-ggsave(filename = paste0(dir_graphs, "/fig2b.pdf"), plot = fig2b_plot, width = 8, height = 6)
 
+if (save_plots == TRUE) {
+  ggsave(filename = paste0(dir_graphs, "/fig2b.pdf"), plot = fig2b_plot, width = 8, height = 6)
+}
 
 # Willngness model
 broom.mixed::tidy(m_fig2, effect = "fixed") %>%
@@ -416,8 +430,10 @@ fig3a_plot <- ggplot() +
   geom_vline(xintercept = 0, lty = 3) + 
   fig2_theme
 fig3a_plot
-ggsave(filename = paste0(dir_graphs, "/fig3a.pdf"), plot = fig3a_plot, width = 8, height = 6)
 
+if (save_plots == TRUE) {
+  ggsave(filename = paste0(dir_graphs, "/fig3a.pdf"), plot = fig3a_plot, width = 8, height = 6)
+}
 
 fig3b_plot <- ggplot() + 
   # Valence
@@ -431,7 +447,10 @@ fig3b_plot <- ggplot() +
   geom_vline(xintercept = 0, lty = 3) + 
   fig2_theme
 fig3b_plot
-ggsave(filename = paste0(dir_graphs, "/fig3a.pdf"), plot = fig3a_plot, width = 8, height = 6)
+
+if (save_plots == TRUE) {
+  ggsave(filename = paste0(dir_graphs, "/fig3a.pdf"), plot = fig3a_plot, width = 8, height = 6)
+}
 
 # Change model
 broom.mixed::tidy(m_fig3, effect = "fixed") %>%

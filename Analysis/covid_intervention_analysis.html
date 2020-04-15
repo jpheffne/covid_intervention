@@ -1532,6 +1532,9 @@ interventionaltruism:arousal_scale
 <pre class="r"><code># Knitr options
 knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, message = FALSE)
 
+# Save plots or not
+save_plots &lt;- FALSE # plots already saved
+
 # Libraries
 library(here) # relative paths
 library(tidyverse) # tidy functions
@@ -1634,7 +1637,10 @@ fig1a_plot &lt;- ggplot(fig1a_data, aes(x = question, y = Mean, fill = intervent
         strip.background = element_blank(),
         strip.placement = &quot;outside&quot;)
 fig1a_plot
-ggsave(filename = paste0(dir_graphs, &quot;/fig1a.pdf&quot;), plot = fig1a_plot, width = 6, height = 6)
+
+if (save_plots == TRUE) {
+  ggsave(filename = paste0(dir_graphs, &quot;/fig1a.pdf&quot;), plot = fig1a_plot, width = 6, height = 6)
+}
 
 # Figure 1a descriptives
 fig1a_data %&gt;% 
@@ -1692,7 +1698,10 @@ fig1b_plot &lt;- ggplot(df, aes(x = valence, y = arousal, color = intervention))
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 fig1b_plot
-ggsave(filename = paste0(dir_graphs, &quot;/fig1b.pdf&quot;), plot = fig1b_plot, width = 6, height = 6)
+
+if (save_plots == TRUE) {
+  ggsave(filename = paste0(dir_graphs, &quot;/fig1b.pdf&quot;), plot = fig1b_plot, width = 6, height = 6)
+}
 
 # Figure 1b descriptives
 fig1b_data %&gt;% 
@@ -1781,7 +1790,10 @@ fig2a_plot &lt;- ggplot() +
   geom_vline(xintercept = 0, lty = 3) + 
   fig2_theme
 fig2a_plot
-ggsave(filename = paste0(dir_graphs, &quot;/fig2a.pdf&quot;), plot = fig2a_plot, width = 8, height = 6)
+
+if (save_plots == TRUE) {
+  ggsave(filename = paste0(dir_graphs, &quot;/fig2a.pdf&quot;), plot = fig2a_plot, width = 8, height = 6)
+}
 
 fig2b_plot &lt;- ggplot() + 
   # Valence
@@ -1795,8 +1807,10 @@ fig2b_plot &lt;- ggplot() +
   geom_vline(xintercept = 0, lty = 3) + 
   fig2_theme
 fig2b_plot
-ggsave(filename = paste0(dir_graphs, &quot;/fig2b.pdf&quot;), plot = fig2b_plot, width = 8, height = 6)
 
+if (save_plots == TRUE) {
+  ggsave(filename = paste0(dir_graphs, &quot;/fig2b.pdf&quot;), plot = fig2b_plot, width = 8, height = 6)
+}
 
 # Willngness model
 broom.mixed::tidy(m_fig2, effect = &quot;fixed&quot;) %&gt;%
@@ -1851,8 +1865,10 @@ fig3a_plot &lt;- ggplot() +
   geom_vline(xintercept = 0, lty = 3) + 
   fig2_theme
 fig3a_plot
-ggsave(filename = paste0(dir_graphs, &quot;/fig3a.pdf&quot;), plot = fig3a_plot, width = 8, height = 6)
 
+if (save_plots == TRUE) {
+  ggsave(filename = paste0(dir_graphs, &quot;/fig3a.pdf&quot;), plot = fig3a_plot, width = 8, height = 6)
+}
 
 fig3b_plot &lt;- ggplot() + 
   # Valence
@@ -1866,7 +1882,10 @@ fig3b_plot &lt;- ggplot() +
   geom_vline(xintercept = 0, lty = 3) + 
   fig2_theme
 fig3b_plot
-ggsave(filename = paste0(dir_graphs, &quot;/fig3a.pdf&quot;), plot = fig3a_plot, width = 8, height = 6)
+
+if (save_plots == TRUE) {
+  ggsave(filename = paste0(dir_graphs, &quot;/fig3a.pdf&quot;), plot = fig3a_plot, width = 8, height = 6)
+}
 
 # Change model
 broom.mixed::tidy(m_fig3, effect = &quot;fixed&quot;) %&gt;%
