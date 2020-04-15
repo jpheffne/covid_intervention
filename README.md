@@ -1,5 +1,7 @@
 # covid_intervention
-Behavioral data and analysis script for "Emotional responses to prosocial messages increase willingness to self-isolate during the COVID-19 pandemic" ([preprint](https://psyarxiv.com/qkxvb))
+Behavioral data and analysis script for "Emotional responses to prosocial messages increase willingness to self-isolate during the COVID-19 pandemic"
+
+The preprint can be found on PsyArxiv: [https://psyarxiv.com/qkxvb](https://psyarxiv.com/qkxvb)
 
 # Setup
 The R Markdown file in the Analysis folder contains all the analysis code for the paper as well as a html version. In order to run the code you'll need the following packages up-to-date: 
