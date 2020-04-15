@@ -9,7 +9,7 @@ output:
 ---
 
 # Setup
-To run this analysis script you'll have to have the following packages installed: 
+To run this analysis script you'll have to have the following packages installed (make sure tidyverse is updated): 
 
 `here`, `tidyverse`, `knitr`, `kableExtra`, `lsr`, `broom.mixed`, `AICcmodavg`, `cowplot`, `ggrepel`
 
@@ -30,15 +30,15 @@ knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, message = FALSE)
 save_plots <- FALSE # plots already saved
 
 # Libraries
-library(here) # relative paths
-library(tidyverse) # tidy functions
-library(knitr) # knit functions
-library(kableExtra) # extra markdown functions
-library(lsr) # cohenD()
-library(broom.mixed) # tidy() 
-library(AICcmodavg) # predictSE()
-library(cowplot) # plot_grid()
-library(ggrepel) # geom_text_repel
+library(here)         # relative paths
+library(tidyverse)    # tidy functions
+library(knitr)        # knit functions
+library(kableExtra)   # extra markdown functions
+library(lsr)          # cohenD()
+library(broom.mixed)  # tidy() 
+library(AICcmodavg)   # predictSE()
+library(cowplot)      # plot_grid()
+library(ggrepel)      # geom_text_repel
 ```
 
 # Data
@@ -479,6 +479,11 @@ broom.mixed::tidy(m_fig3, effect = "fixed") %>%
 fig3_data_s <- fig2_data %>% mutate(intervention = fct_relevel(intervention, "altruism", "fear"))
 m_fig3_s <- nlme::lme(change_scale ~ intervention*valence_scale + intervention*arousal_scale, 
                  random = ~ 1 + intervention| sub, data = fig3_data_s)
+```
+
+# Session Info
+```{r session_info}
+sessionInfo()
 ```
 
 # Appendix
