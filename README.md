@@ -17,5 +17,5 @@ library(AICcmodavg)  # predictSE()
 library(cowplot)     # plot_grid()
 library(ggrepel)     # geom_text_repel
 ```
-# Contact me
+# Contact
 If you have any questions or suggestions please feel free to open an issue on this repo or email me directly at joseph_heffner@brown.edu. 
