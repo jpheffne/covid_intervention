@@ -112,6 +112,7 @@ difference_avg %>%
 diff_t1 <- t.test(difference %>% filter(intervention == "fear") %>% .$delta, mu = 0)
 d_t1 <- cohensD(difference %>% filter(intervention == "fear") %>% .$delta, mu = 0)
 
+# Manually generate tables for easier viewing
 t1_table <- data.frame(row.names = "fear",
                        t = round(diff_t1$statistic, 2), 
                        df = diff_t1$parameter, 
