@@ -17,5 +17,18 @@ library(AICcmodavg)  # predictSE()
 library(cowplot)     # plot_grid()
 library(ggrepel)     # geom_text_repel
 ```
+
+# Folders
+This repo contains the following folders: Analysis, Data, and Graphs. 
+
+## Analysis
+Main analysis script can be found here alongside an html Markdown file showing all results and code. 
+
+## Data 
+Cleaned data can be found here. See Analysis script for a description of all variables. 
+
+## Graphs
+Graphs produced for the preprint manuscript from R. Note that some style changes have been added to the final graphs in the manuscript using Illustrator, but in general I try to keep the graph output from R as close as possible to the final graph. 
+
 # Contact
 If you have any questions or suggestions please feel free to open an issue on this repo or email me directly at joseph_heffner@brown.edu. 
