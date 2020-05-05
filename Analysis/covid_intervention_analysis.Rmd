@@ -3,31 +3,27 @@ title: "Covid Intervention Results"
 author: "Joey Heffner"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
-  html_document: default
-  pdf_document: default
-  word_document: default
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
 # Setup
-To run this analysis script you'll have to have the following packages installed (make sure tidyverse is updated): 
+To run this analysis script you'll have to have the following packages installed (make sure `tidyverse` is updated): 
 
 `here`, `tidyverse`, `knitr`, `kableExtra`, `lsr`, `broom.mixed`, `AICcmodavg`, `cowplot`, `ggrepel`
 
-The order of this Markdown will follow the order of the manuscript. Currently, the sections are broken into: 
+To install these packages simply use the `install.packages()` function and put each package name in as a character. 
 
-- Data
-- Pre-figure 1 statistics
-- Figure 1a
-- Figure 1b
-- Figure 2
-- Figure 3
+# Covid Intervention
+The order of this Markdown will follow the order of the manuscript which can be found on [PsyArxiv](https://psyarxiv.com/qkxvb). It will be more helpful to read or skim the preprint before going through this script. 
 
 ```{r setup, include=FALSE}
 # Knitr options
 knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, message = FALSE)
 
 # Save plots or not
-save_plots <- FALSE # plots already saved
+save_plots <- FALSE  # if you want to generate new plots make TRUE
 
 # Libraries
 library(here)         # relative paths
@@ -42,30 +38,15 @@ library(ggrepel)      # geom_text_repel
 ```
 
 # Data
-Below you can see a snippet of the data. The columns of the data refer to: 
+The general purpose of this experiment was to determine how effective `fear` and `altruism` interventions were in increasing preventative behavior related to COVID-19. Below you can see a snippet of the data where the columns refer to: 
 
 - `sub`: unique subject identifier
 - `intervention`: `fear` intervention or `altruism` intervention
-- `valence`: unpleasant (-) or pleasant (+) rating of the intervention (-250 to +250)
-- `arousal`: low (-) or high (+) arousal rating of the intervention (-250 to + 250)
+- `valence`: unpleasant (-) or pleasant (+) rating of the intervention (range -250 to +250)
+- `arousal`: low (-) or high (+) arousal rating of the intervention (range -250 to + 250)
 - `willingness`: self-report rating of willingness to self-isolate (0 - not at all), (100 - completely) 
 - `change`: self-report change in willingness to self-isolate after reading intervention (0 - no change), (100 - a lot of change)
 - `stay_home`: self-report baseline for self-isolation ("I stayed home; 0 - not at all, 100 - all the time)
-
-The two intervention prompts are shown below: 
-
-#### Fear
-<center>"The coronavirus is coming for you. When it does, your healthcare system will be overwhelmed. Your fellow citizens will be turned away at the hospital doors. Exhausted healthcare workers will break down. Millions will die. The only way to prevent this crisis is social distancing today."</center>
-
-#### Altruism
-<center>"Help save our most vulnerable. Together, we can stop the coronavirus. Everyone's actions count, every single person can help to slow the crisis. We have the tools to solve this problem. Together, by self isolating we can save millions of lives."</center>
-
-#### Questions
-The three questions participants were asked after each intervention are shown below: 
-
-1. How does this statement make you feel? (`valence` + `arousal`)
-2. On a scale from 0 (not at all) to 100 (completely), how willing are you to self-isolate? (`willingness`)
-3. On a scale from 0 (no change) to 100 (a lot of change), how much does the previous statement change your willingness to self-isolate? (`change`)
 
 ```{r read_data}
 # Specify relative pathing
@@ -83,12 +64,25 @@ head(df) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
 
-# Pre-figure 1 statistics
-Shows the following statistics: 
+# Interventions
+The two intervention prompts are shown below: 
 
-- average stay at home value (`avg_stay_home`)
-- descriptives for difference measures (`avg_diff` = `willingness` - `stay_home`)
-- one-sample t-tests comparing difference measure to 0
+## Fear
+<center>"The coronavirus is coming for you. When it does, your healthcare system will be overwhelmed. Your fellow citizens will be turned away at the hospital doors. Exhausted healthcare workers will break down. Millions will die. The only way to prevent this crisis is social distancing today."</center>
+
+## Altruism
+<center>"Help save our most vulnerable. Together, we can stop the coronavirus. Everyone's actions count, every single person can help to slow the crisis. We have the tools to solve this problem. Together, by self isolating we can save millions of lives."</center>
+
+## Questions
+The three questions participants were asked after each intervention are shown below: 
+
+1. How does this statement make you feel? (`valence` + `arousal`)
+2. On a scale from 0 (not at all) to 100 (completely), how willing are you to self-isolate? (`willingness`)
+3. On a scale from 0 (no change) to 100 (a lot of change), how much does the previous statement change your willingness to self-isolate? (`change`)
+
+
+# Pre-figure 1
+In the paper we conduct some analyses before showing the first figure (Figure 1). Specifically, we calculate a baseline for how often participants were staying at home because of COVID-19 (`avg_stay_home`), descriptives for differences between the intervention reports and this baseline (`avg_diff` = `willingness` - `stay_home`), and one-sample t-tests comparing these difference measures from 0. 
 
 ```{r pre_fig1}
 ## Average stay_home behavior
@@ -141,10 +135,8 @@ t_tables %>%
 kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
 
-# Figure 1a - Self-isolation behavior after reading each intervention
-- Figure 1a graph
-- Figure 1a descriptives
-- Figure 1a statistics
+# Figure 1a
+In Figure 1a we show self-isolation before after reading each intervention (`fear` and `altruism`). This code chunk produces a graph (`fig1a_plot`), descriptive values for Figure 1, and two-sample t-tests comparing the `fear` and `altruism` results. 
 
 ```{r fig1a}
 ## Figure 1a - Overall intervention 
@@ -208,10 +200,10 @@ t_tables %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
 
-# Figure 1b - Emotional experiences after interventions
-- Figure 1b graph
-- Figure 1b descriptives
-- Figure 1b statistics
+# Figure 1b 
+In Figure 1b, we show the emotional experiences participants report having after reading each intervention. We developed this measurement technique from prior work (Heffner, Son & FeldmanHall, under review) where participants make emotion ratings on a 2D surface with valence and arousal axes. See preprint for more details. 
+
+The code chunk will produce a graph (`fig1b_plot`), descriptives for this plot, and t-test comparisons between the interventions on valence and arousal experiences. 
 
 ```{r fig1b}
 ## Figure 1b - Emotional experiences
@@ -288,10 +280,8 @@ t_tables %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
 
-# Figure 2 - Emotional experience predicts reported willingness to self-isolate after altruistic intervention
-- Figure 2 graph
-- Figure 2 descriptives
-- Figure 2 statistics
+# Figure 2
+In Figure 2 we show the relationship between emotional experiences and reported willingness to self-isolate after reading the altruistic intervention. The code chunk below will product two graphs (`fig2a_plot`, `fig2b_plot`) which were combined in Illustrator alongside including significance indicators. Additionally, the code will run a linear mixed-effects model predicting willingness to self-isolate as a function of the valence and arousal of each intervention. The significant results are highlighted in red and show that the emotional experience predicts reported willingness to self-isolate after the altruistic intervention. 
 
 ```{r fig2}
 ## Figure 2 data
@@ -398,10 +388,8 @@ m_fig2_s <- nlme::lme(willingness_scale ~ intervention*valence_scale + intervent
                  random = ~ 1 + intervention| sub, data = fig2_data_s)
 ```
 
-# Figure 3 - Emotional experience predicts reported changes in self-isolation after altruistic intervention
-- Figure 3 graph
-- Figure 3 descriptives
-- Figure 3 statistics
+# Figure 3
+In Figure 3 we show the relationship between emotional experiences and reported changes in self-isolation (a different measure from willingness) after reading the altruistic intervention. The code chunk below will product two graphs (`fig3a_plot`, `fig3b_plot`) which were combined in Illustrator alongside including significance indicators. Additionally, the code will run a linear mixed-effects model predicting willingness to self-isolate as a function of the valence and arousal of each intervention. The significant results are highlighted in red and show that the emotional experience predicts reported changes in self-isolation after the altruistic intervention. 
 
 ```{r fig3}
 # Same dataframe as in Fig 2
@@ -482,12 +470,14 @@ m_fig3_s <- nlme::lme(change_scale ~ intervention*valence_scale + intervention*a
 ```
 
 # Session Info
+Because packages change and can break scripts at later timepoints I have included a snapshot of my session information for full reproducibility.
+
 ```{r session_info}
 sessionInfo()
 ```
 
 # Appendix
-Code used for all figures and analyses. 
+If you are interested in seeing the actual code for producing all these analyses and figures it is displayed below. Thank you!
 
 ```{r ref.label=knitr::all_labels(), echo = T, eval = F}
 ```
