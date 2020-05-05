@@ -21,15 +21,15 @@ library(ggrepel)     # geom_text_repel
 # Folders
 This repo contains the following folders: Analysis, Data, and Graphs. 
 
-1. Analysis
+1. **Analysis**
 
    Main analysis script can be found here alongside an html Markdown file showing all results and code. 
 
-2. Data 
+2. **Data**
 
    Cleaned data can be found here. See Analysis script for a description of all variables. 
 
-3. Graphs
+3. **Graphs**
 
    Graphs produced for the preprint manuscript from R. Note that some style changes have been added to the final graphs in the manuscript using Illustrator, but in general I try to keep the graph output from R as close as possible to the final graph. 
 
