@@ -4,6 +4,8 @@ Behavioral data and analysis script for "Emotional responses to prosocial messag
 The preprint can be found on PsyArxiv: [https://psyarxiv.com/qkxvb](https://psyarxiv.com/qkxvb)
 
 # Setup
+Clone repository or simply download in a zip file. 
+
 The R Markdown file in the Analysis folder contains all the analysis code for the paper as well as a html version. In order to run the code you'll need the following packages up-to-date: 
 
 ```
