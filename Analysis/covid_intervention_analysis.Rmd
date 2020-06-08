@@ -15,8 +15,10 @@ To run this analysis script you'll have to have the following packages installed
 
 To install these packages simply use the `install.packages()` function and put each package name in as a character. 
 
+**Note**: If you've already used the `here()` function in another script, you will have to open a new instance of R to ensure the relative pathing works for this script. 
+
 # Covid Intervention
-The order of this Markdown will follow the order of the manuscript which can be found on [PsyArxiv](https://psyarxiv.com/qkxvb). It will be more helpful to read or skim the preprint before going through this script. 
+The order of this Markdown will follow the order of results in the manuscript which can be found on [PsyArxiv](https://psyarxiv.com/qkxvb).
 
 ```{r setup, include=FALSE}
 # Knitr options
@@ -38,15 +40,16 @@ library(ggrepel)      # geom_text_repel
 ```
 
 # Data
-The general purpose of this experiment was to determine how effective `fear` and `altruism` interventions were in increasing preventative behavior related to COVID-19. Below you can see a snippet of the data where the columns refer to: 
+The general purpose of this experiment was to determine how effective `threat` and `prosocial` interventions were in increasing preventative behavior related to COVID-19. Below you can see a snippet of the data where the columns refer to: 
 
 - `sub`: unique subject identifier
-- `intervention`: `fear` intervention or `altruism` intervention
+- `intervention`: `threat` intervention or `prosocial` intervention
 - `valence`: unpleasant (-) or pleasant (+) rating of the intervention (range -250 to +250)
 - `arousal`: low (-) or high (+) arousal rating of the intervention (range -250 to + 250)
 - `willingness`: self-report rating of willingness to self-isolate (0 - not at all), (100 - completely) 
 - `change`: self-report change in willingness to self-isolate after reading intervention (0 - no change), (100 - a lot of change)
 - `stay_home`: self-report baseline for self-isolation ("I stayed home; 0 - not at all, 100 - all the time)
+- `mean_behavior`: self-report average baseline for preventative behaviors (variety of behaviors, 0- not at all, 100 - all the time)
 
 ```{r read_data}
 # Specify relative pathing
@@ -67,10 +70,10 @@ head(df) %>%
 # Interventions
 The two intervention prompts are shown below: 
 
-## Fear
+## Threat
 <center>"The coronavirus is coming for you. When it does, your healthcare system will be overwhelmed. Your fellow citizens will be turned away at the hospital doors. Exhausted healthcare workers will break down. Millions will die. The only way to prevent this crisis is social distancing today."</center>
 
-## Altruism
+## Prosocial
 <center>"Help save our most vulnerable. Together, we can stop the coronavirus. Everyone's actions count, every single person can help to slow the crisis. We have the tools to solve this problem. Together, by self isolating we can save millions of lives."</center>
 
 ## Questions
@@ -82,13 +85,13 @@ The three questions participants were asked after each intervention are shown be
 
 
 # Pre-figure 1
-In the paper we conduct some analyses before showing the first figure (Figure 1). Specifically, we calculate a baseline for how often participants were staying at home because of COVID-19 (`avg_stay_home`), descriptives for differences between the intervention reports and this baseline (`avg_diff` = `willingness` - `stay_home`), and one-sample t-tests comparing these difference measures from 0. 
+In the paper we conduct some analyses before showing the first figure (Figure 1). Specifically, we calculate a baseline for how often participants were staying at home because of COVID-19 (`avg_stay_home`), descriptives for differences between the intervention reports and this baseline (`avg_diff` = `willingness` - `stay_home`), and one-sample t-tests comparing these difference measures from 0. Additionally, we have shown that using an aggregate scale of preventative COVID-19 behaviors (`mean_behavior`) produces similar results as using the single item `stay_home`.
 
 ```{r pre_fig1}
 ## Average stay_home behavior
 stay_home <- df %>% 
   select(sub, stay_home) %>% 
-  unique() %>% # unique value per sub
+  unique() %>%
   summarise(avg_stay_home = mean(stay_home))
 
 stay_home %>% 
@@ -97,47 +100,57 @@ stay_home %>%
 
 ## Difference measures
 difference <- df %>%
-  mutate(delta = willingness - stay_home)
+  mutate(delta = willingness - stay_home, 
+         delta2 = willingness - mean_behavior)
   
 # Difference descriptives
 difference_avg <- difference %>% 
   group_by(intervention) %>%
-  summarise(avg_diff = mean(delta), sd_diff = sd(delta), N = n())
+  summarise(avg_diff = round(mean(delta), 2), sd_diff = round(sd(delta), 2), N = n())
 
 difference_avg %>%
   kable(caption = "Difference descriptives") %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
 # Difference statistics
-diff_t1 <- t.test(difference %>% filter(intervention == "fear") %>% .$delta, mu = 0)
-d_t1 <- cohensD(difference %>% filter(intervention == "fear") %>% .$delta, mu = 0)
+diff_t1a <- t.test(difference %>% filter(intervention == "threat") %>% .$delta, mu = 0)
+d_t1a <- cohensD(difference %>% filter(intervention == "threat") %>% .$delta, mu = 0)
 
 # Manually generate tables for easier viewing
-t1_table <- data.frame(row.names = "fear",
-                       t = round(diff_t1$statistic, 2), 
-                       df = diff_t1$parameter, 
-                       p = format(round(diff_t1$p.value, 3), nsmall = 3), 
-                       d = round(d_t1, 2),
-                       mu = diff_t1$null.value)
+t1_table <- data.frame(row.names = "threat",
+                       t = round(diff_t1a$statistic, 2), 
+                       df = diff_t1a$parameter, 
+                       p = format(round(diff_t1a$p.value, 3), nsmall = 3), 
+                       d = round(d_t1a, 2),
+                       mu = diff_t1a$null.value, 
+                       cohen_d = round(d_t1a, 2))
 
-diff_t2 <- t.test(difference %>% filter(intervention == "altruism") %>% .$delta, mu = 0)
-d_t2 <- cohensD(difference %>% filter(intervention == "altruism") %>% .$delta, mu = 0)
+diff_t2a <- t.test(difference %>% filter(intervention == "prosocial") %>% .$delta, mu = 0)
+d_t2a <- cohensD(difference %>% filter(intervention == "prosocial") %>% .$delta, mu = 0)
 
-t2_table <- data.frame(row.names = "altruism",
-                       t = round(diff_t2$statistic, 2), 
-                       df = diff_t2$parameter, 
-                       p = format(round(diff_t2$p.value, 3), nsmall = 3), 
-                       d = round(d_t2, 2),
-                       mu = diff_t2$null.value)
+t2_table <- data.frame(row.names = "prosocial",
+                       t = round(diff_t2a$statistic, 2), 
+                       df = diff_t2a$parameter, 
+                       p = format(round(diff_t2a$p.value, 3), nsmall = 3), 
+                       d = round(d_t2a, 2),
+                       mu = diff_t2a$null.value, 
+                       cohen_d = round(d_t2a, 2))
 
 t_tables <- rbind(t1_table, t2_table)
 t_tables %>%
-  kable(caption = "One-sample t-tests") %>%
+  kable(caption = "One-sample t-tests comparing `avg_diff` to 0") %>%
 kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
+## Same analysis with `mean_behavior` difference to 0
+diff_t1b <- t.test(difference %>% filter(intervention == "threat") %>% .$delta2, mu = 0)
+d_t1b <- cohensD(difference %>% filter(intervention == "threat") %>% .$delta2, mu = 0)
+
+diff_t2b <- t.test(difference %>% filter(intervention == "prosocial") %>% .$delta2, mu = 0)
+d_t2b <- cohensD(difference %>% filter(intervention == "prosocial") %>% .$delta2, mu = 0)
 ```
 
 # Figure 1a
-In Figure 1a we show self-isolation before after reading each intervention (`fear` and `altruism`). This code chunk produces a graph (`fig1a_plot`), descriptive values for Figure 1, and two-sample t-tests comparing the `fear` and `altruism` results. 
+In Figure 1a we show self-isolation before after reading each intervention (`threat` and `prosocial`). This code chunk produces a graph (`fig1a_plot`), descriptive values for Figure 1, and two-sample t-tests comparing the `threat` and `prosocial` results. 
 
 ```{r fig1a}
 ## Figure 1a - Overall intervention 
@@ -151,7 +164,7 @@ fig1a_data <- df %>%
          upr = Mean + qt(1 - (0.05 / 2), N - 1) * SE)
 
 # Aesthetics 
-intervention_colors <- c("#66c2a5", "#f46d43") # Altruism, Fear
+intervention_colors <- c("#66c2a5", "#f46d43") # prosocial, threat
 
 fig1a_plot <- ggplot(fig1a_data, aes(x = question, y = Mean, fill = intervention)) + 
   geom_bar(stat = "identity", position = position_dodge(.9)) + 
@@ -166,7 +179,9 @@ fig1a_plot <- ggplot(fig1a_data, aes(x = question, y = Mean, fill = intervention
   theme(axis.text = element_text(size = rel(1.25)),
         axis.title = element_text(size = rel(1.5)), 
         legend.text = element_text(size = rel(1.25)), 
-        legend.title = element_text(size = rel(1.5)), 
+        legend.title = element_text(size = rel(1.5)),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
         strip.text = element_text(size = rel(1.5)), 
         strip.background = element_blank(),
         strip.placement = "outside")
@@ -183,7 +198,7 @@ fig1a_data %>%
 
 # Figure 1a statistics
 t1_test <- t.test(willingness ~ intervention, paired = TRUE, data = df) # cleaner paired t-test code
-# t.test(df$willingness[df$intervention == "fear"], df$willingness[df$intervention == "altruism"], paired = TRUE) # same results
+# t.test(df$willingness[df$intervention == "threat"], df$willingness[df$intervention == "prosocial"], paired = TRUE) # same results
 t1_table <- data.frame(row.names = "willingness",
                        t = round(t1_test$statistic, 2), 
                        df = t1_test$parameter, 
@@ -251,29 +266,29 @@ fig1b_data %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
 # Figure 1b statistics
-t1_test <- t.test(df$arousal[df$intervention == "fear"], df$arousal[df$intervention == "altruism"], paired = TRUE, data = df)
-t1_d <- cohensD(x = df$arousal[df$intervention == "fear"], y = df$arousal[df$intervention == "altruism"], method = "paired") # less clean but works with cohenD function
+t1_test <- t.test(df$arousal[df$intervention == "threat"], df$arousal[df$intervention == "prosocial"], paired = TRUE, data = df)
+t1_d <- cohensD(x = df$arousal[df$intervention == "threat"], y = df$arousal[df$intervention == "prosocial"], method = "paired") # less clean but works with cohenD function
 t1_table <- data.frame(row.names = "arousal",
                        t = round(t1_test$statistic, 2), 
                        df = t1_test$parameter, 
                        p = format(round(t1_test$p.value, 3), nsmall = 3), 
-                       d = round(t1_d, 2))
+                       cohen_d = round(t1_d, 2))
 
-t2_test <- t.test(df$valence[df$intervention == "fear"], df$valence[df$intervention == "altruism"], paired = TRUE, data = df)
-t2_d <- cohensD(x = df$valence[df$intervention == "fear"], y = df$valence[df$intervention == "altruism"], method = "paired")
+t2_test <- t.test(df$valence[df$intervention == "threat"], df$valence[df$intervention == "prosocial"], paired = TRUE, data = df)
+t2_d <- cohensD(x = df$valence[df$intervention == "threat"], y = df$valence[df$intervention == "prosocial"], method = "paired")
 t2_table <- data.frame(row.names = "valence",
                        t = round(t2_test$statistic, 2), 
                        df = t2_test$parameter, 
                        p = format(round(t2_test$p.value, 3), nsmall = 3), 
-                       d = round(t2_d, 2))
+                       cohen_d = round(t2_d, 2))
 
-t3_test <- t.test(abs(df$valence[df$intervention == "fear"]), abs(df$valence[df$intervention == "altruism"]), paired = TRUE, data = df)
-t3_d <- cohensD(x = abs(df$valence[df$intervention == "fear"]), y = abs(df$valence[df$intervention == "altruism"]), method = "paired")
+t3_test <- t.test(abs(df$valence[df$intervention == "threat"]), abs(df$valence[df$intervention == "prosocial"]), paired = TRUE, data = df)
+t3_d <- cohensD(x = abs(df$valence[df$intervention == "threat"]), y = abs(df$valence[df$intervention == "prosocial"]), method = "paired")
 t3_table <- data.frame(row.names = "abs(valence)",
                        t = round(t3_test$statistic, 2), 
                        df = t3_test$parameter, 
                        p = format(round(t3_test$p.value, 3), nsmall = 3), 
-                       d = round(t3_d, 2))
+                       cohen_d = round(t3_d, 2))
 
 t_tables <- rbind(t1_table, t2_table, t3_table)
 t_tables %>%
@@ -282,7 +297,9 @@ t_tables %>%
 ```
 
 # Figure 2
-In Figure 2 we show the relationship between emotional experiences and reported willingness to self-isolate after reading the altruistic intervention. The code chunk below will product two graphs (`fig2a_plot`, `fig2b_plot`) which were combined in Illustrator alongside including significance indicators. Additionally, the code will run a linear mixed-effects model predicting willingness to self-isolate as a function of the valence and arousal of each intervention. The significant results are highlighted in red and show that the emotional experience predicts reported willingness to self-isolate after the altruistic intervention. 
+In Figure 2 we show the relationship between emotional experiences and reported willingness to self-isolate after reading the prosocial intervention. The code chunk below will product two graphs (`fig2a_plot`, `fig2b_plot`) which were combined in Illustrator alongside including significance indicators. Additionally, the code will run a linear mixed-effects model predicting willingness to self-isolate as a function of the valence and arousal of each intervention. The significant results are highlighted in red and show that the emotional experience predicts reported willingness to self-isolate after the prosocial intervention.
+
+**Note**: please note that the significance from the simple effects are derived by changing the reference category in the main mixed-effects regression. While the model outputs that are shown here use `threat` as the reference category (meaning the simple effects of `valence` and `arousal` are in reference to `threat`), simply change the reference category to `prosocial` to examine its simple effects.
 
 ```{r fig2}
 ## Figure 2 data
@@ -291,7 +308,7 @@ fig2_data <- df %>%
          change_scale = as.numeric(scale(change)), 
          valence_scale = as.numeric(scale(valence, center = F)), # scale but not mean-center (0 = neutral)
          arousal_scale = as.numeric(scale(arousal, center = F)), # scale but not mean-center (0 = neutral)
-         intervention = fct_relevel(intervention, "fear", "altruism")) # reference point fear
+         intervention = fct_relevel(intervention, "threat", "prosocial")) # reference point threat
 
 ## Figure 2 plot
 fig2_theme <- theme_bw() +
@@ -306,7 +323,7 @@ range_valence <- range(fig2_data$valence_scale)
 range_arousal <- range(fig2_data$arousal_scale)
 xRange1 <- seq(range_valence[1], range_valence[2], by = .1)
 xRange2 <- seq(range_arousal[1], range_arousal[2], by = .1)
-xRange3 <- c("altruism", "fear")
+xRange3 <- c("prosocial", "threat")
 
 v_pred <- with(fig2_data, expand.grid(valence_scale = xRange1, arousal_scale = 0, intervention = xRange3))
 a_pred <- with(fig2_data, expand.grid(valence_scale = 0, arousal_scale = xRange2, intervention = xRange3))
@@ -326,6 +343,11 @@ a_pred$se <- a_results$se.fit
 arousal_colors <- c("#fc9272", "#de2d26")
 valence_colors <- c("#bcbddc", "#756bb1")
 
+# Simple effects - change reference category
+fig2_data_s <- fig2_data %>% mutate(intervention = fct_relevel(intervention, "prosocial", "threat"))
+m_fig2_s <- nlme::lme(willingness_scale ~ intervention*valence_scale + intervention*arousal_scale, 
+                 random = ~ 1 + intervention| sub, data = fig2_data_s)
+
 fig2a_plot <- ggplot() + 
   # Arousal
   geom_line(data = a_pred, aes(x = arousal_scale, y = fit, color = intervention), size = 2) + 
@@ -336,6 +358,9 @@ fig2a_plot <- ggplot() +
   scale_fill_manual(values = arousal_colors) + 
   geom_hline(yintercept = 0, lty = 3) + 
   geom_vline(xintercept = 0, lty = 3) + 
+  # Significance 
+  annotate(geom = "text", label = "n.s.", x = -.25, y = -.035, hjust = 1, color = arousal_colors[2], angle = 20) + # threat
+  annotate(geom = "text", label = "***", x = .75, y = -.14, hjust = 1, color = arousal_colors[1], angle = 70) + # prosocial
   fig2_theme
 fig2a_plot
 
@@ -353,6 +378,9 @@ fig2b_plot <- ggplot() +
   scale_fill_manual(values = valence_colors) + 
   geom_hline(yintercept = 0, lty = 3) + 
   geom_vline(xintercept = 0, lty = 3) + 
+  # Significance 
+  annotate(geom = "text", label = "n.s.", x = -.35, y = -.1, hjust = 1, color = valence_colors[2], angle = -35) + # threat
+  annotate(geom = "text", label = "**", x = -.15, y = -.23, hjust = 1, color = valence_colors[1], angle = 70) + # prosocial
   fig2_theme
 fig2b_plot
 
@@ -378,19 +406,14 @@ broom.mixed::tidy(m_fig2, effect = "fixed") %>%
                         background = if_else(p.label != "n.s.", "red", "black"))
   ) %>%
   kable(format = "html", 
-        caption = "Willingness Model ", 
+        caption = "Willingness Model (threat is reference category)", 
         escape = FALSE) %>% # escape = FALSE critical to avoid escaping special characters in the HTML
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
-  footnote(general = "Formula: willingness_scale ~ intervention * valence_scale + intervention * arousal_scale + (1 + intervention|sub)\n Intervention reference category is fear")
-
-# Simple effects - change reference category
-fig2_data_s <- fig2_data %>% mutate(intervention = fct_relevel(intervention, "altruism", "fear"))
-m_fig2_s <- nlme::lme(willingness_scale ~ intervention*valence_scale + intervention*arousal_scale, 
-                 random = ~ 1 + intervention| sub, data = fig2_data_s)
+  footnote(general = "Formula: willingness_scale ~ intervention * valence_scale + intervention * arousal_scale + (1 + intervention|sub)\n Intervention reference category is threat")
 ```
 
 # Figure 3
-In Figure 3 we show the relationship between emotional experiences and reported changes in self-isolation (a different measure from willingness) after reading the altruistic intervention. The code chunk below will product two graphs (`fig3a_plot`, `fig3b_plot`) which were combined in Illustrator alongside including significance indicators. Additionally, the code will run a linear mixed-effects model predicting willingness to self-isolate as a function of the valence and arousal of each intervention. The significant results are highlighted in red and show that the emotional experience predicts reported changes in self-isolation after the altruistic intervention. 
+In Figure 3 we show the relationship between emotional experiences and reported changes in self-isolation (a different measure from willingness) after reading the prosocial intervention. The code chunk below will product two graphs (`fig3a_plot`, `fig3b_plot`) which were combined in Illustrator alongside including significance indicators. Additionally, the code will run a linear mixed-effects model predicting changes to self-isolate as a function of the valence and arousal of each intervention. The significant results are highlighted in red and show that the emotional experience predicts reported changes in self-isolation after the prosocial intervention. 
 
 ```{r fig3}
 # Same dataframe as in Fig 2
@@ -407,6 +430,11 @@ v_pred$se <- v_results$se.fit
 a_pred$fit <- a_results$fit
 a_pred$se <- a_results$se.fit
 
+# Simple effects - change reference category
+fig3_data_s <- fig2_data %>% mutate(intervention = fct_relevel(intervention, "prosocial", "threat"))
+m_fig3_s <- nlme::lme(change_scale ~ intervention*valence_scale + intervention*arousal_scale, 
+                 random = ~ 1 + intervention| sub, data = fig3_data_s)
+
 fig3a_plot <- ggplot() + 
   # Arousal
   geom_line(data = a_pred, aes(x = arousal_scale, y = fit, color = intervention), size = 2) + 
@@ -417,6 +445,9 @@ fig3a_plot <- ggplot() +
   scale_fill_manual(values = arousal_colors) + 
   geom_hline(yintercept = 0, lty = 3) + 
   geom_vline(xintercept = 0, lty = 3) + 
+  # Significance 
+  annotate(geom = "text", label = "*", x = -.25, y = -.035, hjust = 1, color = arousal_colors[2], angle = 20) + # threat
+  annotate(geom = "text", label = "*", x = -.25, y = -.35, hjust = 1, color = arousal_colors[1], angle = 70) + # prosocial
   fig2_theme
 fig3a_plot
 
@@ -434,11 +465,14 @@ fig3b_plot <- ggplot() +
   scale_fill_manual(values = valence_colors) + 
   geom_hline(yintercept = 0, lty = 3) + 
   geom_vline(xintercept = 0, lty = 3) + 
+  # Significance 
+  annotate(geom = "text", label = "n.s.", x = -.35, y = -.13, hjust = 1, color = valence_colors[2], angle = -35) + # threat
+  annotate(geom = "text", label = "***", x = -.15, y = -.4, hjust = 1, color = valence_colors[1], angle = 70) + # prosocial
   fig2_theme
 fig3b_plot
 
 if (save_plots == TRUE) {
-  ggsave(filename = paste0(dir_graphs, "/fig3a.pdf"), plot = fig3a_plot, width = 8, height = 6)
+  ggsave(filename = paste0(dir_graphs, "/fig3b.pdf"), plot = fig3b_plot, width = 8, height = 6)
 }
 
 # Change model
@@ -462,12 +496,7 @@ broom.mixed::tidy(m_fig3, effect = "fixed") %>%
         caption = "Change Model ", 
         escape = FALSE) %>% # escape = FALSE critical to avoid escaping special characters in the HTML
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
-  footnote(general = "Formula: change_scale ~ intervention*valence_scale + intervention*arousal_scale + (1 + intervention|sub)\n Intervention reference category is fear")
-
-# Simple effects - change reference category
-fig3_data_s <- fig2_data %>% mutate(intervention = fct_relevel(intervention, "altruism", "fear"))
-m_fig3_s <- nlme::lme(change_scale ~ intervention*valence_scale + intervention*arousal_scale, 
-                 random = ~ 1 + intervention| sub, data = fig3_data_s)
+  footnote(general = "Formula: change_scale ~ intervention*valence_scale + intervention*arousal_scale + (1 + intervention|sub)\n Intervention reference category is threat")
 ```
 
 # Session Info
