@@ -15,7 +15,7 @@ To run this analysis script you'll have to have the following packages installed
 
 To install these packages simply use the `install.packages()` function and put each package name in as a character. 
 
-**Note**: If you've already used the `here()` function in another script, you will have to open a new instance of R to ensure the relative pathing works for this script. 
+**Note**: If you've already used the `here()` function in another script, you will have to open a new instance of R to ensure the relative pathing works for this script (or manually change the pathing). 
 
 # Covid Intervention
 The order of this Markdown will follow the order of results in the manuscript which can be found on [PsyArxiv](https://psyarxiv.com/qkxvb).
@@ -50,6 +50,8 @@ The general purpose of this experiment was to determine how effective `threat` a
 - `change`: self-report change in willingness to self-isolate after reading intervention (0 - no change), (100 - a lot of change)
 - `stay_home`: self-report baseline for self-isolation ("I stayed home; 0 - not at all, 100 - all the time)
 - `mean_behavior`: self-report average baseline for preventative behaviors (variety of behaviors, 0- not at all, 100 - all the time)
+- `bfi_extraversion`: extraversion personality measure from the BFI-2-S; [Soto & John, 2017](https://www.sciencedirect.com/science/article/abs/pii/S0092656616301325)
+- `bfi_neuroticism`: neuroticism personality measure from the BFI-2-S;  [Soto & John, 2017](https://www.sciencedirect.com/science/article/abs/pii/S0092656616301325)
 
 ```{r read_data}
 # Specify relative pathing
@@ -121,7 +123,6 @@ t1_table <- data.frame(row.names = "threat",
                        t = round(diff_t1a$statistic, 2), 
                        df = diff_t1a$parameter, 
                        p = format(round(diff_t1a$p.value, 3), nsmall = 3), 
-                       d = round(d_t1a, 2),
                        mu = diff_t1a$null.value, 
                        cohen_d = round(d_t1a, 2))
 
@@ -132,7 +133,6 @@ t2_table <- data.frame(row.names = "prosocial",
                        t = round(diff_t2a$statistic, 2), 
                        df = diff_t2a$parameter, 
                        p = format(round(diff_t2a$p.value, 3), nsmall = 3), 
-                       d = round(d_t2a, 2),
                        mu = diff_t2a$null.value, 
                        cohen_d = round(d_t2a, 2))
 
@@ -296,20 +296,162 @@ t_tables %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
 
+# Pre-figure 2
+Before Figure 2, we present some analyses examining the relationship between emotional engagement and personality traits (`extraversion` and `neuroticism`) by intervention. Specifically, we conduct linear-mixed effects regressions examining the relationship between `arousal` and `valence` (separately) to `extraversion` and `neuroticism` (separately) by intervention. 
+
+## Neuroticism analyses
+
+```{r neuroticism}
+# Figure 2 data used for pre-figure 2 and figure 2
+fig2_data <- df %>%
+  mutate(willingness_scale = as.numeric(scale(willingness)), 
+         change_scale = as.numeric(scale(change)), 
+         valence_scale = as.numeric(scale(valence, center = F)),               # scale but not mean-center (0 = neutral)
+         arousal_scale = as.numeric(scale(arousal, center = F)),               # scale but not mean-center (0 = neutral)
+         extraversion_scale = as.numeric(scale(bfi_extraversion, center = T)), # scale and mean-center (0 = average)
+         neuroticism_scale = as.numeric(scale(bfi_neuroticism, center = T)),   # scale and mean-center (0 = average)
+         intervention = fct_relevel(intervention, "threat", "prosocial"),      # reference point threat
+         intervention_opp = fct_relevel(intervention, "prosocial", "threat")) # reference point prosocial 
+
+## Neuroticism analysis
+# Arousal ~ intervention*neuroticism 
+neuro_a <- nlme::lme(arousal_scale ~ intervention*neuroticism_scale, random = ~ 1| sub,
+                data = fig2_data)
+
+# Simple effect of prosocial 
+neuro_a_s <- nlme::lme(arousal_scale ~ intervention_opp*neuroticism_scale, random = ~ 1| sub,
+                data = fig2_data)
+
+# Display arousal model
+broom::tidy(neuro_a, effect = "fixed") %>%
+  mutate(
+    p.value = format(round(p.value, digits=3), nsmall = 3),
+    p.label = case_when(p.value <= .001 ~ "***", 
+                        p.value <= .01 ~ "**", 
+                        p.value <= .05 ~ "*", 
+                        p.value > .05 ~ "n.s."),
+    p.value = cell_spec(p.value,
+                        "html",
+                        color = "white", 
+                        background = if_else(p.value < 0.05, "red", "black")),
+    p.label = cell_spec(p.label,
+                        "html",
+                        color = "white", 
+                        background = if_else(p.label != "n.s.", "red", "black"))
+  ) %>%
+  kable(format = "html", 
+        caption = "Arousal ~ Intervention*Neuroticism + (1|sub)", 
+        escape = FALSE) %>% # escape = FALSE critical to avoid escaping special characters in the HTML
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
+  footnote(general = "Intervention reference category is threat")
+
+# Valence ~ intervention*extraversion 
+neuro_v <- nlme::lme(valence_scale ~ intervention*neuroticism_scale, random = ~ 1| sub,
+                data = fig2_data)
+
+# Simple effect of prosocial 
+neuro_v_s <- nlme::lme(valence_scale ~ intervention_opp*neuroticism_scale, random = ~ 1| sub,
+                data = fig2_data)
+
+# Display valence model
+broom::tidy(neuro_v, effect = "fixed") %>%
+  mutate(
+    p.value = format(round(p.value, digits=3), nsmall = 3),
+    p.label = case_when(p.value <= .001 ~ "***", 
+                        p.value <= .01 ~ "**", 
+                        p.value <= .05 ~ "*", 
+                        p.value > .05 ~ "n.s."),
+    p.value = cell_spec(p.value,
+                        "html",
+                        color = "white", 
+                        background = if_else(p.value < 0.05, "red", "black")),
+    p.label = cell_spec(p.label,
+                        "html",
+                        color = "white", 
+                        background = if_else(p.label != "n.s.", "red", "black"))
+  ) %>%
+  kable(format = "html", 
+        caption = "Valence ~ Intervention*Neuroticism + (1|sub)", 
+        escape = FALSE) %>% # escape = FALSE critical to avoid escaping special characters in the HTML
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
+  footnote(general = "Intervention reference category is threat")
+```
+
+
+## Extraversion analyses
+
+```{r extraversion}
+## Extraversion analysis
+# Arousal ~ intervention*extraversion 
+extra_a <- nlme::lme(arousal_scale ~ intervention*extraversion_scale, random = ~ 1| sub,
+                data = fig2_data)
+
+# Simple effect of prosocial 
+extra_a_s <- nlme::lme(arousal_scale ~ intervention_opp*extraversion_scale, random = ~ 1| sub,
+                data = fig2_data)
+
+# Display arousal model
+broom::tidy(extra_a, effect = "fixed") %>%
+  mutate(
+    p.value = format(round(p.value, digits=3), nsmall = 3),
+    p.label = case_when(p.value <= .001 ~ "***", 
+                        p.value <= .01 ~ "**", 
+                        p.value <= .05 ~ "*", 
+                        p.value > .05 ~ "n.s."),
+    p.value = cell_spec(p.value,
+                        "html",
+                        color = "white", 
+                        background = if_else(p.value < 0.05, "red", "black")),
+    p.label = cell_spec(p.label,
+                        "html",
+                        color = "white", 
+                        background = if_else(p.label != "n.s.", "red", "black"))
+  ) %>%
+  kable(format = "html", 
+        caption = "Arousal ~ Intervention*Extraversion + (1|sub)", 
+        escape = FALSE) %>% # escape = FALSE critical to avoid escaping special characters in the HTML
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
+  footnote(general = "Intervention reference category is threat")
+
+# Valence ~ intervention*extraversion 
+extra_v <- nlme::lme(valence_scale ~ intervention*extraversion_scale, random = ~ 1| sub,
+                data = fig2_data)
+
+# Simple effect of prosocial 
+extra_v_s <- nlme::lme(valence_scale ~ intervention_opp*extraversion_scale, random = ~ 1| sub,
+                data = fig2_data)
+
+# Display valence model
+broom::tidy(extra_v, effect = "fixed") %>%
+  mutate(
+    p.value = format(round(p.value, digits=3), nsmall = 3),
+    p.label = case_when(p.value <= .001 ~ "***", 
+                        p.value <= .01 ~ "**", 
+                        p.value <= .05 ~ "*", 
+                        p.value > .05 ~ "n.s."),
+    p.value = cell_spec(p.value,
+                        "html",
+                        color = "white", 
+                        background = if_else(p.value < 0.05, "red", "black")),
+    p.label = cell_spec(p.label,
+                        "html",
+                        color = "white", 
+                        background = if_else(p.label != "n.s.", "red", "black"))
+  ) %>%
+  kable(format = "html", 
+        caption = "Valence ~ Intervention*Extraversion + (1|sub)", 
+        escape = FALSE) %>% # escape = FALSE critical to avoid escaping special characters in the HTML
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
+  footnote(general = "Intervention reference category is threat")
+```
+
+
 # Figure 2
 In Figure 2 we show the relationship between emotional experiences and reported willingness to self-isolate after reading the prosocial intervention. The code chunk below will product two graphs (`fig2a_plot`, `fig2b_plot`) which were combined in Illustrator alongside including significance indicators. Additionally, the code will run a linear mixed-effects model predicting willingness to self-isolate as a function of the valence and arousal of each intervention. The significant results are highlighted in red and show that the emotional experience predicts reported willingness to self-isolate after the prosocial intervention.
 
 **Note**: please note that the significance from the simple effects are derived by changing the reference category in the main mixed-effects regression. While the model outputs that are shown here use `threat` as the reference category (meaning the simple effects of `valence` and `arousal` are in reference to `threat`), simply change the reference category to `prosocial` to examine its simple effects.
 
 ```{r fig2}
-## Figure 2 data
-fig2_data <- df %>%
-  mutate(willingness_scale = as.numeric(scale(willingness)), 
-         change_scale = as.numeric(scale(change)), 
-         valence_scale = as.numeric(scale(valence, center = F)), # scale but not mean-center (0 = neutral)
-         arousal_scale = as.numeric(scale(arousal, center = F)), # scale but not mean-center (0 = neutral)
-         intervention = fct_relevel(intervention, "threat", "prosocial")) # reference point threat
-
 ## Figure 2 plot
 fig2_theme <- theme_bw() +
   theme(panel.grid.major = element_blank(), 
@@ -319,7 +461,7 @@ fig2_theme <- theme_bw() +
         legend.text = element_text(size = rel(1.5)), 
         legend.title = element_text(size = rel(1.75)))
 
-range_valence <- range(fig2_data$valence_scale)
+range_valence <- range(fig2_data$valence_scale) # fig2_data already defined previously
 range_arousal <- range(fig2_data$arousal_scale)
 xRange1 <- seq(range_valence[1], range_valence[2], by = .1)
 xRange2 <- seq(range_arousal[1], range_arousal[2], by = .1)
@@ -343,10 +485,9 @@ a_pred$se <- a_results$se.fit
 arousal_colors <- c("#fc9272", "#de2d26")
 valence_colors <- c("#bcbddc", "#756bb1")
 
-# Simple effects - change reference category
-fig2_data_s <- fig2_data %>% mutate(intervention = fct_relevel(intervention, "prosocial", "threat"))
-m_fig2_s <- nlme::lme(willingness_scale ~ intervention*valence_scale + intervention*arousal_scale, 
-                 random = ~ 1 + intervention| sub, data = fig2_data_s)
+# Simple effects
+m_fig2_s <- nlme::lme(willingness_scale ~ intervention_opp*valence_scale + intervention_opp*arousal_scale, 
+                 random = ~ 1 + intervention_opp| sub, data = fig2_data)
 
 fig2a_plot <- ggplot() + 
   # Arousal
@@ -406,7 +547,7 @@ broom.mixed::tidy(m_fig2, effect = "fixed") %>%
                         background = if_else(p.label != "n.s.", "red", "black"))
   ) %>%
   kable(format = "html", 
-        caption = "Willingness Model (threat is reference category)", 
+        caption = "Willingness Model", 
         escape = FALSE) %>% # escape = FALSE critical to avoid escaping special characters in the HTML
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
   footnote(general = "Formula: willingness_scale ~ intervention * valence_scale + intervention * arousal_scale + (1 + intervention|sub)\n Intervention reference category is threat")
@@ -430,10 +571,9 @@ v_pred$se <- v_results$se.fit
 a_pred$fit <- a_results$fit
 a_pred$se <- a_results$se.fit
 
-# Simple effects - change reference category
-fig3_data_s <- fig2_data %>% mutate(intervention = fct_relevel(intervention, "prosocial", "threat"))
-m_fig3_s <- nlme::lme(change_scale ~ intervention*valence_scale + intervention*arousal_scale, 
-                 random = ~ 1 + intervention| sub, data = fig3_data_s)
+# Simple effects
+m_fig3_s <- nlme::lme(change_scale ~ intervention_opp*valence_scale + intervention_opp*arousal_scale, 
+                 random = ~ 1 + intervention_opp| sub, data = fig2_data)
 
 fig3a_plot <- ggplot() + 
   # Arousal
@@ -493,7 +633,7 @@ broom.mixed::tidy(m_fig3, effect = "fixed") %>%
                         background = if_else(p.label != "n.s.", "red", "black"))
   ) %>%
   kable(format = "html", 
-        caption = "Change Model ", 
+        caption = "Change Model", 
         escape = FALSE) %>% # escape = FALSE critical to avoid escaping special characters in the HTML
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
   footnote(general = "Formula: change_scale ~ intervention*valence_scale + intervention*arousal_scale + (1 + intervention|sub)\n Intervention reference category is threat")
