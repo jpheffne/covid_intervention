@@ -18,7 +18,7 @@ To install these packages simply use the `install.packages()` function and put e
 **Note**: If you've already used the `here()` function in another script, you will have to open a new instance of R to ensure the relative pathing works for this script (or manually change the pathing). 
 
 # Covid Intervention
-The order of this Markdown will follow the order of results in the manuscript which can be found on [PsyArxiv](https://psyarxiv.com/qkxvb).
+The order of this Markdown will follow the order of results in the manuscript which is published in the journal of Personality and Individual Differences at the following [DOI](https://doi.org/10.1016/j.paid.2020.110420).
 
 ```{r setup, include=FALSE}
 # Knitr options
@@ -95,6 +95,9 @@ stay_home <- df %>%
   select(sub, stay_home) %>% 
   unique() %>%
   summarise(avg_stay_home = mean(stay_home))
+
+## Skew
+skew <- e1071::skewness(df %>% select(sub, stay_home) %>% unique() %>% .$stay_home)
 
 stay_home %>% 
   kable(caption = "Stay_Home Descriptive") %>%
@@ -214,6 +217,18 @@ t_tables <- rbind(t1_table, t2_table)
 t_tables %>%
   kable(caption = "Paired-sample t-tests") %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
+# Correlation
+cor(df$willingness[df$intervention == "prosocial"], 
+    df$change[df$intervention == "prosocial"])
+cor.test(df$willingness[df$intervention == "prosocial"], 
+    df$change[df$intervention == "prosocial"])
+
+cor(df$willingness[df$intervention == "threat"], 
+    df$change[df$intervention == "threat"])
+cor.test(df$willingness[df$intervention == "threat"], 
+    df$change[df$intervention == "threat"])
+
 ```
 
 # Figure 1b 
