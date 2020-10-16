@@ -1,7 +1,7 @@
 # covid_intervention
 Behavioral data and analysis script for "Emotional responses to prosocial messages increase willingness to self-isolate during the COVID-19 pandemic"
 
-The preprint can be found on PsyArxiv: [https://psyarxiv.com/qkxvb](https://psyarxiv.com/qkxvb)
+The manuscript has been published in the the journal of Personality and Individual Differences at the following [DOI](https://doi.org/10.1016/j.paid.2020.110420).
 
 # Setup
 Clone repository or simply download in a zip file. 
